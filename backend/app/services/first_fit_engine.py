@@ -49,12 +49,24 @@ def free_spans_from_pillars(width_m: float, pillars: list[dict]) -> list[tuple[f
         spans.append((cursor, width_m))
     return [(round(a, 3), round(b, 3)) for a, b in spans if b - a > 1e-6]
 
-def allocate_first_fit(width_m: float, vendors: list[dict], pillars: list[dict]) -> AllocResult:
-    """vendors sorted by priority ascending then id; each needs stall_width_m contiguous in one free span (no pillar cross)."""
+def allocate_first_fit(
+    width_m: float,
+    vendors: list[dict],
+    pillars: list[dict],
+    priority_override: dict[int, float] | None = None,
+) -> AllocResult:
+    """vendors sorted by effective priority ascending then id; each needs stall_width_m contiguous in one free span (no pillar cross).
+
+    priority_override 仅本轮排序用的临时优先，绝不写回摊主登记值；
+    不传或为空时与原实现完全一致。
+    """
+    override = priority_override or {}
     spans = free_spans_from_pillars(width_m, pillars)
     # mutable remaining capacity per span
     remain = [[a, b] for a, b in spans]
-    ordered = sorted(vendors, key=lambda v: (v.get("priority", 1), v["id"]))
+    def eff(v: dict) -> float:
+        return override.get(v["id"], v.get("priority", 1))
+    ordered = sorted(vendors, key=lambda v: (eff(v), v["id"]))
     placements: list[Placement] = []
     rejected: list[Rejected] = []
     for v in ordered:
@@ -74,9 +86,13 @@ def allocate_first_fit(width_m: float, vendors: list[dict], pillars: list[dict])
     free = [(round(a, 3), round(b, 3)) for a, b in remain if b - a > 1e-6]
     return AllocResult(placements, rejected, free)
 
-def result_to_dict(r: AllocResult) -> dict:
-    return {
+def result_to_dict(r: AllocResult, priority_override: dict[int, float] | None = None) -> dict:
+    out = {
         "placements": [asdict(p) for p in r.placements],
         "rejected": [asdict(x) for x in r.rejected],
         "free_spans": [{"start_m": a, "end_m": b} for a, b in r.free_spans],
     }
+    # 仅在确有临时压低时下发覆盖表；未让路与绿仓响应形状一致
+    if priority_override:
+        out["priority_override"] = {str(k): v for k, v in sorted(priority_override.items())}
+    return out

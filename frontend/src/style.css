@@ -146,3 +146,27 @@ th { color: var(--ss-muted); font-weight: 700; font-size: 0.78rem; }
 
 .stall-strip { display: flex; height: 56px; border: 2px solid var(--ss-curb); overflow: hidden; margin: 0.75rem 0; background: #3a3126; }
 .stall-cell { display: flex; align-items: center; justify-content: center; font-size: 0.7rem; border-right: 1px solid rgba(255,255,255,0.08); overflow: hidden; white-space: nowrap; }
+
+/* 让路 */
+.ss-map-actions { display: flex; align-items: center; gap: 0.6rem; margin: 0.1rem 0 0.4rem; }
+.ss-btn-sm { padding: 0.25rem 0.6rem; font-size: 0.78rem; box-shadow: 1px 1px 0 var(--ss-asphalt); }
+.ss-btn-ghost {
+  background: transparent; color: var(--ss-curb);
+  border: 2px solid var(--ss-curb); box-shadow: none;
+}
+.ss-temp { color: var(--ss-accent); }
+.ss-yield-banner { border-color: var(--ss-accent); background: #fbf1de; }
+.ss-yield-head { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
+.ss-yield-actions { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.6rem; }
+.ss-yield-fail { border-color: var(--ss-bad); background: #fbeae7; margin-top: 0.6rem; }
+.ss-yield-fail p { margin: 0.25rem 0; font-size: 0.85rem; }
+.ss-action-error {
+  background: rgba(163,58,44,0.1); border-left: 4px solid var(--ss-bad);
+  padding: 0.5rem 0.7rem; border-radius: 3px; font-size: 0.85rem; color: var(--ss-bad);
+  margin: 0.4rem 0;
+}
+select {
+  font-family: inherit; font-size: 0.82rem; padding: 0.25rem 0.4rem;
+  border: 1px solid var(--ss-curb); border-radius: 3px; background: #fff;
+  color: var(--ss-ink);
+}
