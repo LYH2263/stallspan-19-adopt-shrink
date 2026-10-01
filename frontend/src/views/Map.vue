@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import { api } from '../api'
-const data = ref<any>(null)
-const vendors = ref<any[]>([])
-async function run() { data.value = await api('/allocate/run?segment_id=1', { method: 'POST' }) }
-onMounted(async () => {
-  vendors.value = await api('/vendors')
-  await run()
-})
+import { computed, onMounted } from 'vue'
+import {
+  allocStore, ensureState, confirmAllocation, resetYields, clearError,
+} from '../store/allocation'
+
+onMounted(() => { ensureState() })
+
 const colors = ['#e8a87c','#85dcb8','#e27d60','#c38d9e','#41b3a3','#f4a261','#e76f51']
+const data = computed(() => allocStore.state)
+
 const cells = computed(() => {
   if (!data.value) return []
   const width = data.value.segment.width_m
@@ -25,8 +25,20 @@ const cells = computed(() => {
 <template>
   <div class="ss-street-wrap">
     <h1>街段分配带</h1>
-    <p class="sub">沿街一维开间 · 挡柱为竖直阻断 · 底部为摊主排队</p>
-    <button class="btn" @click="run">重新分配</button>
+    <p class="sub">沿街一维开间 · 挡柱为竖直阻断 · 底部为本轮临时优先排队</p>
+    <div class="ss-actions">
+      <button class="btn" :disabled="allocStore.confirming" @click="confirmAllocation">
+        {{ allocStore.confirming ? '确认中…' : '确认落库' }}
+      </button>
+      <button class="btn" :disabled="allocStore.confirming" @click="resetYields">重置让路</button>
+      <span v-if="allocStore.state?.latest_run_id" class="muted">
+        已确认运行 #{{ allocStore.state.latest_run_id }}
+      </span>
+    </div>
+    <div v-if="allocStore.error && !allocStore.error.vendorId" class="ss-inline-err">
+      {{ allocStore.error.message }}
+      <a href="#" @click.prevent="clearError">×</a>
+    </div>
     <div class="ss-band-ruler" v-if="data">
       <span>0 m</span>
       <span>{{ data.segment.name }} · {{ data.segment.width_m }} m</span>
@@ -43,9 +55,14 @@ const cells = computed(() => {
       </div>
     </div>
     <div class="ss-vendor-queue">
-      <div v-for="v in vendors" :key="v.id" class="ss-vendor-chip">
+      <div v-for="v in (data?.vendors || [])" :key="v.id" class="ss-vendor-chip">
         <strong>{{ v.name }}</strong>
-        <span>需 {{ v.stall_width_m }} m · 优先 {{ v.priority }}</span>
+        <span>
+          需 {{ v.stall_width_m }} m · 登记 {{ v.priority }}
+          <template v-if="v.temp_priority !== v.priority">
+            · <em class="ss-temp-pri">临时 {{ v.temp_priority }}</em>
+          </template>
+        </span>
       </div>
     </div>
     <div class="card" v-if="data">

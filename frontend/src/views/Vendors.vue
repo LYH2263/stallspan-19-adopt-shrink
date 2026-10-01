@@ -1,23 +1,33 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { api } from '../api'
-const rows = ref<any[]>([])
-onMounted(async () => { rows.value = await api('/vendors') })
+import { onMounted } from 'vue'
+import { allocStore, ensureState } from '../store/allocation'
+
+onMounted(() => { ensureState() })
 </script>
 <template>
   <h1>摊主队列</h1>
-  <p class="sub">底部排队条 · 宽度与优先级</p>
+  <p class="sub">登记优先只读 · 本轮临时优先仅来自让路，绝不写回登记值</p>
   <div class="ss-vendor-queue" style="border-top:none; background:transparent; margin:0; padding:0.5rem 0 1rem">
-    <div v-for="r in rows" :key="r.id ?? JSON.stringify(r)" class="ss-vendor-chip">
+    <div v-for="r in (allocStore.state?.vendors || [])" :key="r.id" class="ss-vendor-chip">
       <strong>{{ r.name }}</strong>
-      <span>需 {{ r.stall_width_m }} m · 优先 {{ r.priority }}</span>
+      <span>
+        需 {{ r.stall_width_m }} m · 登记 {{ r.priority }}
+        <template v-if="r.temp_priority !== r.priority">
+          · <em class="ss-temp-pri">临时 {{ r.temp_priority }}</em>
+        </template>
+      </span>
     </div>
   </div>
   <div class="card">
     <table>
-      <thead><tr><th>摊主</th><th>宽度(m)</th><th>优先级</th></tr></thead>
+      <thead><tr><th>摊主</th><th>宽度(m)</th><th>登记优先</th><th>本轮临时优先</th></tr></thead>
       <tbody>
-        <tr v-for="r in rows" :key="r.id ?? JSON.stringify(r)"><td>{{ r.name }}</td><td>{{ r.stall_width_m }}</td><td>{{ r.priority }}</td></tr>
+        <tr v-for="r in (allocStore.state?.vendors || [])" :key="r.id">
+          <td>{{ r.name }}</td>
+          <td>{{ r.stall_width_m }}</td>
+          <td>{{ r.priority }}</td>
+          <td :class="{ 'ss-temp-cell': r.temp_priority !== r.priority }">{{ r.temp_priority }}</td>
+        </tr>
       </tbody>
     </table>
   </div>

@@ -142,6 +142,18 @@ th { color: var(--ss-muted); font-weight: 700; font-size: 0.78rem; }
 .btn:hover { filter: brightness(1.06); }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .muted { color: var(--ss-muted); }
+
+/* 让路 / 确认 */
+.ss-actions { display: flex; align-items: center; gap: 0.6rem; margin: 0.5rem 0 0.9rem; }
+.ss-actions .btn { box-shadow: none; }
+.ss-inline-err {
+  margin-top: 0.35rem; font-size: 0.78rem; color: var(--ss-bad);
+  background: rgba(163,58,44,0.12); border: 1px solid rgba(163,58,44,0.4);
+  border-radius: 3px; padding: 0.25rem 0.45rem; display: inline-block;
+}
+.ss-inline-err a { color: inherit; margin-left: 0.4rem; font-weight: 700; text-decoration: none; }
+.ss-temp-pri { font-style: normal; font-weight: 800; color: var(--ss-accent); }
+.ss-temp-cell { font-weight: 800; color: var(--ss-accent); background: rgba(196,92,38,0.12); }
 .stat { font-size: 1.5rem; font-weight: 800; }
 
 .stall-strip { display: flex; height: 56px; border: 2px solid var(--ss-curb); overflow: hidden; margin: 0.75rem 0; background: #3a3126; }
